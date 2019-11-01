@@ -28,7 +28,7 @@ public class MainActivity extends BaseActivity implements AdapterView.OnItemClic
     private ArrayAdapter adapter;
     private ListView lv_main;
 
-    public boolean isDeleting;
+    private boolean isDeleting;
 
     private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -39,48 +39,44 @@ public class MainActivity extends BaseActivity implements AdapterView.OnItemClic
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //액션바 코드
-
-        //액션바 타이틀 변경하기
         getSupportActionBar().setTitle(R.string.app_name);
-        //홈버튼 표시
-        //getActionBar().setDisplayHomeAsUpEnabled(false);
 
         setContentView(R.layout.activity_main);
 
         permissionCheck();
-
-        isDeleting = false;
-
         initVar();
         initView();
-    }//End of onCreate
+    }
 
+    /**
+     * Initialize Variables and Objects.
+     */
     private void initVar(){
         loadProjects();
         items = new ArrayList<>();
 
+        isDeleting = false;
+
         for(Project p : projects)
             items.add(p.getProjectName());
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice, items);
 
-        // ArrayAdapter 생성. 아이템 View를 선택(single choice)가능하도록 만듦.
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, items);
-
-        // listview 생성 및 adapter 지정.
         lv_main = findViewById(R.id.mainlistview);
-
     }
 
+    /**
+     * Initialize View Settings.
+     */
     private void initView(){
         lv_main.setAdapter(adapter);
         lv_main.setOnItemClickListener(this);
     }
 
+    /**
+     * This method check permissions and request users to allow permissions.\n
+     * Request Permissions : READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE.
+     */
     private void permissionCheck(){
-
-        //권한 체크(permission check)
-
-        // 권한을 획득하기전에 현재 Acivity에서 지정된 권한을 사용할 수 있는지 여부 체크
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -90,41 +86,39 @@ public class MainActivity extends BaseActivity implements AdapterView.OnItemClic
         }
     }
 
-    //액션버튼 메뉴 액션바에 집어 넣기
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu1, menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
 
-    //액션버튼을 클릭했을때의 동작
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.add) {
-            Toast.makeText(this, "프로젝트 추가", Toast.LENGTH_SHORT).show();
+        if (id == R.id.mm_add) {
+            Toast.makeText(this, R.string.menu_main_add, Toast.LENGTH_SHORT).show();
             addProject();
             return true;
         }
-        else if (id == R.id.delete) {
+        else if (id == R.id.mm_delete) {
             if(isDeleting) {
-                Toast.makeText(this, "프로젝트 삭제", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.menu_main_delete, Toast.LENGTH_SHORT).show();
                 deleteProject();
                 return true;
             }
             else{
-                Toast.makeText(this, "삭제할 프로젝트를 선택하세요", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Choose a project to delete.", Toast.LENGTH_SHORT).show();
             }
             isDeleting = !isDeleting;
             return true;
         }
-        else if (id == R.id.menu1) {
+        else if (id == R.id.mm_developer) {
             Intent intent = new Intent(this, DeveloperActivity.class);
             startActivity(intent);
             return true;
         }
-        else if (id == R.id.menu2) {
+        else if (id == R.id.mm_license) {
             Intent intent = new Intent(this, LicenseActivity.class);
             startActivity(intent);
             return true;
@@ -133,12 +127,14 @@ public class MainActivity extends BaseActivity implements AdapterView.OnItemClic
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Adds a Card News Project by AlertDialog
+     */
     public void addProject() {
-        //팝업창->이름결정
         AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
 
-        alert.setTitle("제목");
-        alert.setMessage("카드뉴스 제목을 입력하세요");
+        alert.setTitle("Title");
+        alert.setMessage("Enter the name of project.");
 
         final EditText name = new EditText(this);
 
@@ -154,43 +150,38 @@ public class MainActivity extends BaseActivity implements AdapterView.OnItemClic
         });
 
         alert.setView(name);
-        //팝업창 클릭버튼
-        alert.setPositiveButton("결정", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
 
-                // 아이템 추가.
                 items.add(String.valueOf(name.getText()));
                 projects.add(new Project(name.getText().toString()));
 
                 saveProjects();
 
-                // listview 갱신
                 adapter.notifyDataSetChanged();
             }
         });
-        //팝업창 보이기
         alert.show();
     }
 
+    /**
+     * Delete a Card News Project by RadioButton in ListView
+     */
     public void deleteProject() {
         int count, checked;
         count = adapter.getCount();
 
         if (count > 0) {
-            // 현재 선택된 아이템의 position 획득.
             checked = lv_main.getCheckedItemPosition();
 
             if (checked > -1 && checked < count) {
-                // 아이템 삭제
                 projects.remove(checked);
                 items.remove(checked);
 
-                // listview 선택 초기화.
                 lv_main.clearChoices();
 
                 saveProjects();
 
-                // listview 갱신.
                 adapter.notifyDataSetChanged();
             }
         }

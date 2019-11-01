@@ -1,10 +1,7 @@
 package com.example.ksh.cardnewsapp;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
-import android.preference.Preference;
 import android.support.v7.app.AppCompatActivity;
-import android.util.ArraySet;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
@@ -12,12 +9,7 @@ import com.example.ksh.cardnewsapp.data.Project;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-
-/**
- * Created by leepyoungwon on 17. 11. 3.
- */
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -29,15 +21,16 @@ public class BaseActivity extends AppCompatActivity {
 
     protected ArrayList<Project> projects;
 
+    /**
+     * Load Card News Projects from SharedPreferences in Json via FastJson
+     */
     protected void loadProjects(){
         projects = new ArrayList<>();
 
         SharedPreferences sp = getSharedPreferences(SP_NAME, MODE_PRIVATE);
         Set<String> names = sp.getStringSet(SP_PROJECTNAMESET, null);
         if(names != null){
-            Iterator<String> iter = names.iterator();
-            while(iter.hasNext()){
-                String s = iter.next();
+            for(String s : names){
                 String json = sp.getString(s, null);
                 if(json != null) {
                     projects.add(JSON.parseObject(json, Project.class));
@@ -47,6 +40,9 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Save Card News Projects into SharedPreferences in Json via FastJson
+     */
     protected void saveProjects(){
         SharedPreferences sp = getSharedPreferences(SP_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
@@ -62,6 +58,10 @@ public class BaseActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    /**
+     * Save a Card News Project into SharedPreferences in Json via FastJson
+     * @param p is a Project Object to save.
+     */
     protected void saveProject(Project p){
         SharedPreferences sp = getSharedPreferences(SP_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
